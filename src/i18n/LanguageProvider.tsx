@@ -16,7 +16,7 @@ const STORAGE_KEY = "locale";
 
 const MESSAGES: Record<Locale, Record<string, string>> = {
   en: {
-    "brand": "Stairway Invest",
+    "brand": "BFP Invest",
     "nav.services": "Services",
     "nav.case": "Case Studies",
     "nav.contact": "Contact",
@@ -61,8 +61,8 @@ const MESSAGES: Record<Locale, Record<string, string>> = {
     "contact.form.alt": "Or email bfp-core@bfpinvest.com",
   },
   zh: {
-    "brand": "奕宸投资",
-    "nav.services": "奕宸服务",
+    "brand": "BFP投资",
+    "nav.services": "服务",
     "nav.case": "投资案例",
     "nav.contact": "联系我们",
     "nav.toggle": "EN",
