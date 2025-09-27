@@ -2,13 +2,24 @@
 
 import ContactForm from "@/components/ContactForm";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/LanguageProvider";
 
 export default function HomeContent() {
   const { t } = useI18n();
   const [case1ImgOk, setCase1ImgOk] = useState(true);
   const [case2ImgOk, setCase2ImgOk] = useState(true);
+  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightbox(null);
+    };
+    if (lightbox) {
+      window.addEventListener("keydown", onKey);
+    }
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightbox]);
   return (
     <main className="min-h-screen font-sans">
       {/* 1) HEAD / HERO */}
@@ -72,7 +83,10 @@ export default function HomeContent() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
             <div className="rounded-xl border border-neutral-200 bg-white p-6 transition">
               {t("cases.item1.img") !== "cases.item1.img" && case1ImgOk && (
-                <div className="relative mb-3 w-full overflow-hidden rounded-md bg-neutral-100 aspect-[16/9]">
+                <div
+                  className="relative mb-3 w-full overflow-hidden rounded-md bg-neutral-100 aspect-[16/9] cursor-zoom-in"
+                  onClick={() => setLightbox({ src: t("cases.item1.img"), alt: t("cases.item1.imgAlt") })}
+                >
                   <Image
                     src={t("cases.item1.img")}
                     alt={t("cases.item1.imgAlt")}
@@ -84,11 +98,14 @@ export default function HomeContent() {
                 </div>
               )}
               <h3 className="mb-1 font-medium">{t("cases.item1.title")}</h3>
-              <p className="text-sm text-neutral-600 dark:text-neutral-300">{t("cases.item1.body")}</p>
+              <p className="text-sm text-neutral-600">{t("cases.item1.body")}</p>
             </div>
             <div className="rounded-xl border border-neutral-200 bg-white p-6 transition">
               {t("cases.item2.img") !== "cases.item2.img" && case2ImgOk && (
-                <div className="relative mb-3 w-full overflow-hidden rounded-md bg-neutral-100 aspect-[16/9]">
+                <div
+                  className="relative mb-3 w-full overflow-hidden rounded-md bg-neutral-100 aspect-[16/9] cursor-zoom-in"
+                  onClick={() => setLightbox({ src: t("cases.item2.img"), alt: t("cases.item2.imgAlt") })}
+                >
                   <Image
                     src={t("cases.item2.img")}
                     alt={t("cases.item2.imgAlt")}
@@ -100,12 +117,24 @@ export default function HomeContent() {
                 </div>
               )}
               <h3 className="mb-1 font-medium">{t("cases.item2.title")}</h3>
-              <p className="text-sm text-neutral-600 dark:text-neutral-300">{t("cases.item2.body")}</p>
+              <p className="text-sm text-neutral-600">{t("cases.item2.body")}</p>
             </div>
             
           </div>
         </div>
       </section>
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setLightbox(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative h-[90vh] w-[90vw] max-w-6xl" onClick={(e) => e.stopPropagation()}>
+            <Image src={lightbox.src} alt={lightbox.alt || "case image"} fill className="object-contain" />
+          </div>
+        </div>
+      )}
 
       {/* 4) CONTACT */}
       <section id="contact" className="border-t border-neutral-200 bg-white">
