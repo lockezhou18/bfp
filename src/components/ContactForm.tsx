@@ -52,7 +52,7 @@ export default function ContactForm() {
         <a href="mailto:bfp@bfpinvest.com" className="text-sm text-neutral-700 underline underline-offset-4">{t("contact.form.alt")}</a>
       </div>
       {status === "sent" && (
-        <p className="text-sm text-green-700">Thanks! We'll get back to you soon.</p>
+        <p className="text-sm text-green-700">Thanks! We&apos;ll get back to you soon.</p>
       )}
       {status === "error" && (
         <p className="text-sm text-red-700">There was an issue sending your message. Please email bfp@bfpinvest.com.</p>
