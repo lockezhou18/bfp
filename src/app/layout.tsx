@@ -15,15 +15,15 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Stairway Invest — 8% Fixed Savings Account",
+  title: "BFP Invest — AI-Powered Real Estate Opportunities",
   description:
-    "Invest in real estate at scale. Fixed 8% interest savings-style account with daily accrual.",
+    "Simple, stable, fast platform for smart decision and process",
   openGraph: {
-    title: "Stairway Invest — 8% Fixed Savings Account",
+    title: "BFP Invest — AI-Powered Real Estate Opportunities",
     description:
-      "Invest in real estate at scale. Fixed 8% interest savings-style account with daily accrual.",
-    url: "https://stairway-invest.local",
-    siteName: "Stairway Invest",
+      "Simple, stable, fast platform for smart decision and process",
+    url: "https://bfp-invest.local",
+    siteName: "BFP Invest",
     type: "website",
   },
 };
