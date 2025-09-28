@@ -10,6 +10,8 @@ export default function HomeContent() {
   const [case1ImgOk, setCase1ImgOk] = useState(true);
   const [case2ImgOk, setCase2ImgOk] = useState(true);
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -17,9 +19,34 @@ export default function HomeContent() {
     };
     if (lightbox) {
       window.addEventListener("keydown", onKey);
+      // Prevent body scroll when lightbox is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = 'unset';
+    };
   }, [lightbox]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isUpSwipe = distance > 50;
+    if (isUpSwipe) {
+      setLightbox(null);
+    }
+  };
   return (
     <main className="min-h-screen font-sans">
       {/* 1) HEAD / HERO */}
@@ -129,8 +156,41 @@ export default function HomeContent() {
           onClick={() => setLightbox(null)}
           role="dialog"
           aria-modal="true"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
-          <div className="relative h-[90vh] w-[90vw] max-w-6xl" onClick={(e) => e.stopPropagation()}>
+          {/* Close button */}
+          <button
+            onClick={() => setLightbox(null)}
+            className="absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white/50"
+            aria-label="Close image"
+          >
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+          
+          {/* Swipe indicator for mobile */}
+          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10">
+            <div className="h-1 w-8 rounded-full bg-white/50"></div>
+          </div>
+          
+          <div 
+            className="relative h-[90vh] w-[90vw] max-w-6xl" 
+            onClick={(e) => e.stopPropagation()}
+          >
             <Image src={lightbox.src} alt={lightbox.alt || "case image"} fill className="object-contain" />
           </div>
         </div>
