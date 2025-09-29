@@ -7,7 +7,9 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "generate-token": "node scripts/generate-refresh-token.js"
+    "generate-token": "node scripts/generate-refresh-token.js",
+    "test-email": "node test-email.js",
+    "setup-gmail": "node setup-gmail-oauth.js"
   },
   "dependencies": {
     "googleapis": "^160.0.0",
