@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import { google } from "googleapis";
 
 type ContactBody = {
   name?: string;
@@ -22,41 +22,55 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "Invalid email" }, { status: 400 });
     }
 
-    const to = process.env.CONTACT_TO || "bfp@bfpinvest.com";
-    let transporter: nodemailer.Transporter;
-    let from: string;
+    const to = process.env.CONTACT_TO || "bfp-core@bfpinvest.com";
+    
+    // Gmail API configuration
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+    const fromEmail = process.env.GOOGLE_FROM_EMAIL || "noreply@bfpinvest.com";
 
-    const host = process.env.SMTP_HOST;
-    const port = parseInt(process.env.SMTP_PORT || "587", 10);
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
-    const secure = (process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465;
-    const envConfigured = Boolean(host && user && pass);
-
-    if (envConfigured) {
-      from = process.env.SMTP_FROM || `Contact Form <${user || "no-reply@bfpinvest.com"}>`;
-      transporter = nodemailer.createTransport({ host, port, secure, auth: { user: user!, pass: pass! } });
-    } else {
-      const test = await nodemailer.createTestAccount();
-      from = `Contact Form <${test.user}>`;
-      transporter = nodemailer.createTransport({
-        host: test.smtp.host,
-        port: test.smtp.port,
-        secure: test.smtp.secure,
-        auth: { user: test.user, pass: test.pass },
-      });
+    if (!clientId || !clientSecret || !refreshToken) {
+      console.error("Missing Gmail API credentials");
+      return NextResponse.json({ ok: false, error: "Email service not configured" }, { status: 500 });
     }
 
-    const info = await transporter.sendMail({
-      from,
-      to,
-      subject: `New contact from ${name}`,
-      replyTo: email,
-      text: `From: ${name} <${email}>\n\n${message}`,
+    // Create OAuth2 client
+    const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
+    oauth2Client.setCredentials({ refresh_token: refreshToken });
+
+    // Create Gmail API instance
+    const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+    // Create email message
+    const emailLines = [
+      `From: ${fromEmail}`,
+      `To: ${to}`,
+      `Reply-To: ${email}`,
+      `Subject: New contact from ${name}`,
+      `Content-Type: text/plain; charset=utf-8`,
+      ``,
+      `From: ${name} <${email}>`,
+      ``,
+      message
+    ];
+
+    const emailMessage = emailLines.join('\r\n');
+    const encodedEmail = Buffer.from(emailMessage).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+    // Send email via Gmail API
+    const result = await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: {
+        raw: encodedEmail
+      }
     });
 
-    const previewUrl = nodemailer.getTestMessageUrl?.(info) || undefined;
-    return NextResponse.json({ ok: true, previewUrl });
+    return NextResponse.json({ 
+      ok: true, 
+      messageId: result.data.id,
+      threadId: result.data.threadId 
+    });
   } catch (err) {
     console.error("/api/contact error", err);
     return NextResponse.json({ ok: false, error: "Server error" }, { status: 500 });
